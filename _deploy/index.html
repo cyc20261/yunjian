@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云笺 · 个人文稿全能助手</title>
+<link rel="icon" type="image/jpeg" href="assets/xiaoyun/03.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 插画壁纸层（透明度可调，位于所有内容之下） -->
+<div id="bgLayer" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo"><img src="assets/xiaoyun/03.jpg" alt="云笺" onerror="this.parentNode.textContent='✍️'"></div>
+    <div class="brand-text">
+      <h1>云笺</h1>
+      <p>写作 · 查重 · 审校 · 字幕，一站搞定</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <select id="modeQuick" class="mode-quick" title="切换 AI 模式：在线 API 消耗 token 能力更强；本地离线免费、断网可用">
+      <option value="deepseek">🌐 在线 · DeepSeek</option>
+      <option value="ollama">💻 本地 · Ollama</option>
+    </select>
+    <span id="connStatus" class="status"><i class="dot" id="statusDot"></i><span id="statusText">未设置 API Key</span></span>
+    <button id="balanceChip" class="balance-chip hidden" type="button" title="账户余额 · 点击刷新"><span>💰</span><span id="balanceText">余额 --</span></button>
+    <button id="guideBtn" class="ghost-btn">📖 <span class="btn-t">指南</span></button>
+    <button id="themeBtn" class="ghost-btn">🎨 <span class="btn-t">壁纸</span></button>
+    <button id="historyBtn" class="ghost-btn">🕘 <span class="btn-t">历史</span></button>
+    <button id="settingsBtn" class="primary-btn">⚙️ <span class="btn-t">设置</span></button>
+  </div>
+</header>
+
+<main class="container">
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="polish">🪄 润色</button>
+    <button class="tab" data-tab="summary">📋 摘要</button>
+    <button class="tab" data-tab="template">📑 模板</button>
+    <button class="tab" data-tab="prompts">📦 提示词库</button>
+    <button class="tab" data-tab="convert">🔄 转换</button>
+    <button class="tab" data-tab="check">🧬 查重降重</button>
+    <button class="tab" data-tab="proof">✅ 审校</button>
+    <button class="tab" data-tab="compare">⚖️ 对比</button>
+    <button class="tab" data-tab="academic">🎓 学术</button>
+    <button class="tab" data-tab="defense">🎤 答辩模拟</button>
+    <button class="tab" data-tab="lit">🔬 文献</button>
+    <button class="tab" data-tab="note">📚 笔记</button>
+    <button class="tab" data-tab="ppt">📊 PPT</button>
+    <button class="tab" data-tab="clip">🎬 剪辑助手</button>
+    <button class="tab" data-tab="audio">🎙️ 录音转写</button>
+    <button class="tab" data-tab="batch">📋 批量处理</button>
+    <button class="tab" data-tab="video">🎞️ 视频剪辑</button>
+  </nav>
+
+  <div class="workspace">
+
+    <!-- ============ 输入区 ============ -->
+    <section class="card input-card">
+
+      <!-- 模块一：文本润色 -->
+      <div class="panel" id="panel-polish">
+        <div class="action-row">
+          <button class="action-btn" data-action="polish">✨ 润色</button>
+          <button class="action-btn" data-action="simplify">✂️ 精简</button>
+          <button class="action-btn" data-action="expand">➕ 扩写</button>
+        </div>
+        <div class="option-row">
+          <span class="option-label">改写风格</span>
+          <div class="chips" id="styleSeg">
+            <button class="chip active" data-style="formal">正式</button>
+            <button class="chip" data-style="casual">口语</button>
+            <button class="chip" data-style="literary">文艺</button>
+            <button class="chip" data-style="academic">学术严谨</button>
+            <button class="chip" data-style="speech">演讲激昂</button>
+            <button class="chip" data-style="brief">简洁简报</button>
+            <button class="chip" data-style="funny">幽默口语</button>
+          </div>
+          <button class="action-btn primary" data-action="restyle">🔁 按风格改写</button>
+        </div>
+      </div>
+
+      <!-- 模块二：文档摘要 -->
+      <div class="panel hidden" id="panel-summary">
+        <div class="option-row">
+          <span class="option-label">内容类型</span>
+          <select id="summaryType" class="select">
+            <option value="article">📄 长文章</option>
+            <option value="ppt">📚 课程 / PPT 文字</option>
+            <option value="chat">💬 聊天记录</option>
+            <option value="meeting">🗓️ 会议记录</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <span class="option-label">摘要方式</span>
+          <div class="segmented" id="summarySeg">
+            <button class="seg active" data-mode="detailed">详细摘要</button>
+            <button class="seg" data-mode="points">要点提取</button>
+            <button class="seg" data-mode="one">一句话总结</button>
+          </div>
+          <button class="action-btn primary" data-action="summarize">📋 提炼重点</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="mindMap">🧠 一键思维导图（XMind / 幕布）</button>
+        </div>
+        <p class="hint">会议纪要、文章、汇报材料都可以一键生成 Markdown 思维导图大纲，复制即可导入 XMind / 幕布。</p>
+      </div>
+
+      <!-- 模块三：模板生成 -->
+      <div class="panel hidden" id="panel-template">
+        <div class="option-row wrap">
+          <span class="option-label">选择模板</span>
+          <div class="chips" id="templateChips">
+            <button class="chip active" data-tpl="email">📧 邮件</button>
+            <button class="chip" data-tpl="leave">📝 请假条</button>
+            <button class="chip" data-tpl="resume">📄 简历片段</button>
+            <button class="chip" data-tpl="report">📊 汇报提纲</button>
+            <button class="chip" data-tpl="speech">🎤 发言稿</button>
+            <button class="chip" data-tpl="title">🏷️ 标题命名</button>
+          </div>
+        </div>
+        <p class="hint" id="templateHint"></p>
+        <button class="action-btn primary big" data-action="template">🚀 生成模板</button>
+      </div>
+
+      <!-- 模块四：语言转换 -->
+      <div class="panel hidden" id="panel-convert">
+        <div class="action-row">
+          <button class="action-btn" data-action="toCasual">🗣️ 书面语 → 口语</button>
+          <button class="action-btn" data-action="plainify">🧸 复杂文字简化</button>
+          <button class="action-btn" data-action="toFormal">🎓 口语 → 书面语</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="toWeChat">💬 转微信消息</button>
+          <button class="action-btn" data-action="toEmail">📧 转规范邮件</button>
+        </div>
+        <p class="hint">把改好的论文腔变成人话、把难懂的内容讲明白；正式文稿一键变微信消息，零散口语一键变规范邮件。</p>
+      </div>
+
+      <!-- 模块五：查重降重 -->
+      <div class="panel hidden" id="panel-check">
+        <div class="action-row">
+          <button class="action-btn" data-action="dupCheck">📏 重复风险自查</button>
+          <button class="action-btn primary" data-action="dupRewrite">🔁 AI 降重改写</button>
+          <button class="action-btn" data-action="dupPrompt">🧩 生成降重提示词</button>
+        </div>
+        <div class="option-row">
+          <span class="option-label">降重强度</span>
+          <div class="chips" id="dupStyleChips">
+            <button class="chip" data-dstyle="light">🪶 保守微调</button>
+            <button class="chip active" data-dstyle="mid">⚖️ 均衡改写</button>
+            <button class="chip" data-dstyle="deep">💥 深度重写</button>
+          </div>
+        </div>
+        <p class="hint">先「重复风险自查」看哪些表达容易撞车，再「AI 降重改写」保留原意、替换句式词汇；「生成降重提示词」按你的强度偏好产出一段可复用的提示词，贴到任何 AI 工具都能用。自查为 AI 表达层风险评估，最终以学校查重数据库为准。</p>
+      </div>
+
+      <!-- 模块六：文稿审校 -->
+      <div class="panel hidden" id="panel-proof">
+        <div class="action-row">
+          <button class="action-btn" data-action="proofCheck">🔍 全面体检（错别字 · 标点 · 语病）</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="proofFormat">📐 格式校验（GB/T 7714 · 标题层级）</button>
+          <button class="action-btn" data-action="proofSensitive">🚫 敏感词检测</button>
+        </div>
+        <p class="hint">开题报告、申请书、课程论文提交前的最后一道关：先全面体检文字问题，再校验参考文献国标格式与标题层级编号，最后扫一遍风险表述。</p>
+      </div>
+
+      <!-- 模块七：多版本文稿对比 -->
+      <div class="panel hidden" id="panel-compare">
+        <div class="action-row">
+          <button class="action-btn primary" data-action="diffNow">✨ 高亮差异（本地秒出 · 不耗 AI）</button>
+          <button class="action-btn" data-action="diffReport">📋 AI 对比报告</button>
+        </div>
+        <div class="cmp-field">
+          <span class="option-label">版本 B（新稿）</span>
+          <textarea id="compareTextB" class="cmp-ta" placeholder="在这里粘贴版本 B（新稿）……左侧主输入框粘贴的是版本 A（原稿）"></textarea>
+        </div>
+        <p class="hint">主输入框 = 版本 A（原稿），这里 = 版本 B（新稿）。「高亮差异」在本地完成：红色删除线 = 删掉的内容，绿色 = 新增内容，附行级重合度统计；「AI 对比报告」则分析改动幅度与改写质量。</p>
+      </div>
+
+      <!-- 模块八：学术助手 -->
+      <div class="panel hidden" id="panel-academic">
+        <div class="action-row">
+          <button class="action-btn" data-action="acPolish">✨ 学术润色</button>
+          <button class="action-btn" data-action="acGrammar">🔍 语法纠错</button>
+          <button class="action-btn" data-action="acRead">📖 论文速读</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="acToEn">🔤 中译英</button>
+          <button class="action-btn" data-action="acToZh">📝 英译中</button>
+        </div>
+        <p class="hint">写论文、读文献必备：润色自动附「修改对照表」，纠错以表格列出错误，翻译符合学术语言习惯，速读按「问题/方法/发现/结论」拆解论文。</p>
+      </div>
+
+      <!-- 模块九：文献助手 -->
+      <div class="panel hidden" id="panel-lit">
+        <div class="action-row">
+          <button class="action-btn" data-action="litKeywords">🔑 生成检索关键词</button>
+          <button class="action-btn" data-action="litNotes">📝 文献要点提炼</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="litFormat">🧾 参考文献格式化（GB/T 7714）</button>
+        </div>
+        <p class="hint">写论文、开题必备：输入研究主题 → 中英文检索关键词与检索式；粘贴文献 → 要点速读（翻译去「学术」页中英互译）；乱格式参考文献 → 一键按国标重排。</p>
+      </div>
+
+      <!-- 模块十：学习笔记整理 -->
+      <div class="panel hidden" id="panel-note">
+        <div class="action-row">
+          <button class="action-btn" data-action="noteSplit">🗂️ 章节拆分 · 考点提炼</button>
+          <button class="action-btn" data-action="noteOutline">📝 复习提纲</button>
+          <button class="action-btn" data-action="noteQuiz">✅ 选择题自测</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="noteMap">🧠 思维导图（XMind）</button>
+          <button class="action-btn" data-action="noteExplain">🧸 难点通俗解释</button>
+        </div>
+        <p class="hint">粘贴课堂笔记、讲义、网课文字、录音转写，自动整理成复习资料；思维导图结果可直接导入 XMind。</p>
+      </div>
+
+      <!-- 模块十一：PPT 智能生成 -->
+      <div class="panel hidden" id="panel-ppt">
+        <div class="option-row wrap">
+          <span class="option-label">模板风格</span>
+          <div class="chips" id="pptThemeChips">
+            <button class="chip active" data-ptheme="defense">🎓 答辩蓝</button>
+            <button class="chip" data-ptheme="report">📈 商务汇报</button>
+            <button class="chip" data-ptheme="contest">🏆 竞赛活力</button>
+            <button class="chip" data-ptheme="minimal">⬜ 简约学术</button>
+          </div>
+        </div>
+        <div class="option-row">
+          <span class="option-label">页数</span>
+          <select id="pptPages" class="select">
+            <option value="6">6 页左右</option>
+            <option value="8">8 页左右</option>
+            <option value="10" selected>10 页左右</option>
+            <option value="12">12 页左右</option>
+            <option value="16">16 页左右</option>
+          </select>
+          <button class="action-btn primary" data-action="pptGen">🪄 生成 PPT 大纲</button>
+        </div>
+        <p class="hint">输入主题或直接粘贴文稿 / 论文 / 讲稿 → 生成整份大纲 → 右侧逐页编辑（增 / 删 / 改）→ 一键导出 .pptx。</p>
+      </div>
+
+      <!-- 模块十二：AI 剪辑助手 -->
+      <div class="panel hidden" id="panel-clip">
+        <div class="action-row">
+          <button class="action-btn" data-action="clipScript">🎬 分镜脚本</button>
+          <button class="action-btn" data-action="clipAdvice">💡 剪辑方案建议</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="subFix">🔧 字幕纠错润色</button>
+          <button class="action-btn" data-action="subSplit">🔤 文稿转字幕（AI 拆句）</button>
+          <button class="action-btn" data-action="subExtract">📤 提取视频内嵌字幕</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" data-action="subSplitLocal">⚡ 本地快速拆句（不耗 AI）</button>
+          <button class="action-btn" data-action="subTranslate">🌐 字幕翻译（双语字幕）</button>
+        </div>
+        <div class="option-row">
+          <span class="option-label">译入语言</span>
+          <select id="subLang" class="select">
+            <option value="英语">英语</option>
+            <option value="日语">日语</option>
+            <option value="中文">中文</option>
+          </select>
+          <span class="option-label">双语排版</span>
+          <div class="segmented" id="subLayoutSeg">
+            <button class="seg active" data-layout="sourceTop">原文在上</button>
+            <button class="seg" data-layout="transTop">译文在上</button>
+            <button class="seg" data-layout="onlyTrans">仅译文</button>
+          </div>
+        </div>
+        <p class="hint" id="clipHint">分镜脚本 / 剪辑建议：粘贴演讲稿或口播文案；字幕纠错：粘贴 SRT（保留时间轴）；文稿转字幕：粘贴纯文稿自动拆句 + 估算时间轴，求快可用「本地快速拆句」（规则断句、不耗 AI）；字幕翻译：粘贴 SRT 一键生成双语字幕。结果可下载 .srt 直接导入剪映。</p>
+      </div>
+
+      <div class="extra-row">
+        <span class="option-label">🎯 补充要求</span>
+        <input id="extraReq" type="text" placeholder="可选：写明字数、语气、受众等硬性要求，如「300字以内，正式一些，给老师看的」——AI 会严格遵守">
+      </div>
+
+      <div class="textarea-wrap">
+        <textarea id="inputText" placeholder="在这里粘贴或输入文本……"></textarea>
+      </div>
+      <div class="input-footer">
+        <span id="charCount">0 字</span>
+        <span class="tip">Ctrl + Enter 快速执行 · 支持拖入 TXT / SRT / MD 文件</span>
+        <span id="slimInfo" class="slim-info hidden"></span>
+        <button id="slimUndo" class="text-btn hidden" title="还原到瘦身前的原文">↩ 还原</button>
+        <button id="slimBtn" class="text-btn strong" title="本地智能瘦身：去多余空白、重复行/标点与口水词，不耗 AI、不花钱，可一键还原">⚡ 瘦身</button>
+        <button id="clearInput" class="text-btn">清空</button>
+      </div>
+    </section>
+
+    <!-- ============ 结果区 ============ -->
+    <section class="card result-card">
+      <div class="result-header">
+        <div class="result-left">
+          <span class="badge" id="resultBadge">等待任务</span>
+          <span id="tokenUsage" class="token-usage"></span>
+        </div>
+        <div class="result-tools">
+          <button id="copyBtn" class="ghost-btn small">复制</button>
+          <button id="applyBtn" class="ghost-btn small hidden">📥 应用到输入框</button>
+          <button id="exportBtn" class="ghost-btn small hidden">⬇ 导出 .md</button>
+          <button id="regenBtn" class="ghost-btn small" disabled>重新生成</button>
+          <button id="stopBtn" class="danger-btn small hidden">⏹ 停止</button>
+        </div>
+      </div>
+      <div id="banner" class="banner hidden">
+        <span>👋 开始前请先选择 AI 模式：「设置」里可填 DeepSeek API Key（在线模式），或一键检测本地 Ollama 模型（离线免费）；也可以开启演示模式先体验</span>
+        <button id="trialBannerBtn" class="ghost-btn small hidden" title="由作者承担费用，真实生成 3 次">🎁 免费体验 3 次</button>
+        <button id="bannerGo" class="text-btn strong">去设置 →</button>
+      </div>
+      <div class="result-body" id="resultBody">
+        <div class="empty">
+          <div class="empty-icon">📄</div>
+          <p>在左侧输入内容，选择功能后即可开始</p>
+          <p class="empty-sub">支持润色、摘要、模板、转换、查重降重、审校、对比、学术、文献、笔记、PPT、剪辑助手、录音转写、视频处理</p>
+        </div>
+      </div>
+      <div id="followups" class="followups hidden">
+        <span class="option-label">💡 追问微调</span>
+        <button class="fu-chip" data-fu="再简短一点，只保留核心信息">再简短点</button>
+        <button class="fu-chip" data-fu="更详细一些，补充细节和例子">更详细</button>
+        <button class="fu-chip" data-fu="语气更正式、更专业">更正式</button>
+        <button class="fu-chip" data-fu="语气更轻松、更口语化">更口语</button>
+        <button class="fu-chip" data-fu="换一个角度和写法重新做一版">换个写法</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 视频一键剪辑（独立工作区） ============ -->
+  <section id="videoWorkspace" class="card video-workspace hidden">
+    <div class="v-head">
+      <div>
+        <h2>🎬 视频一键剪辑</h2>
+        <p class="v-sub">全部在本机浏览器内完成 · 视频不会上传 · 首次处理需加载本地引擎</p>
+      </div>
+      <button id="vAddBtn" class="ghost-btn small">＋ 添加视频</button>
+    </div>
+    <input id="vFileInput" type="file" accept="video/*,.mp4,.webm,.mov,.mkv,.avi,.flv,.m4v,.mts,.ts,.3gp,.ogv" multiple hidden>
+
+    <div id="vDrop" class="v-drop">
+      <div class="v-drop-icon">🎬</div>
+      <p>点击选择视频文件，或把文件拖到这里</p>
+      <p class="v-drop-sub">支持 MP4 / WebM / MOV / MKV / AVI 等 · 可添加多个视频用于拼接</p>
+    </div>
+
+    <div id="vFileBar" class="v-filebar hidden"></div>
+
+    <div id="vMain" class="v-main hidden">
+      <div class="v-left">
+        <video id="vPlayer" controls playsinline></video>
+        <div id="vMeta" class="v-meta"></div>
+        <div class="v-trim">
+          <span class="option-label">✂️ 截取范围</span>
+          <label>起点 <input id="vStart" class="v-time" placeholder="0:00"></label>
+          <label>终点 <input id="vEnd" class="v-time" placeholder="结尾"></label>
+          <button id="vMarkStart" class="ghost-btn small" title="把播放器当前进度设为起点">◀ 起点 = 当前位置</button>
+          <button id="vMarkEnd" class="ghost-btn small" title="把播放器当前进度设为终点">终点 = 当前位置 ▶</button>
+          <span id="vRangeInfo" class="v-range-info"></span>
+        </div>
+        <div class="v-speed">
+          <span class="option-label">⏩ 变速倍率</span>
+          <div class="segmented" id="vSpeedSeg">
+            <button class="seg" data-sp="0.5">0.5x</button>
+            <button class="seg" data-sp="0.75">0.75x</button>
+            <button class="seg active" data-sp="1.5">1.5x</button>
+            <button class="seg" data-sp="2">2x</button>
+          </div>
+        </div>
+        <div class="v-speed">
+          <span class="option-label">🔄 旋转 / 翻转</span>
+          <div class="segmented" id="vRotateSeg">
+            <button class="seg active" data-rot="90">右转 90°</button>
+            <button class="seg" data-rot="180">旋转 180°</button>
+            <button class="seg" data-rot="270">左转 90°</button>
+            <button class="seg" data-rot="hflip">镜像</button>
+          </div>
+        </div>
+      </div>
+      <div class="v-right">
+        <div id="vOps" class="v-ops"></div>
+      </div>
+    </div>
+
+    <div id="vProgress" class="v-progress hidden">
+      <div class="v-progress-top">
+        <span id="vStatusText">处理中…</span>
+        <button id="vCancel" class="danger-btn small hidden">⏹ 取消</button>
+      </div>
+      <div class="v-bar"><i id="vBarFill"></i></div>
+    </div>
+
+    <div id="vResult" class="v-result hidden"></div>
+
+    <p class="v-foot-note">处理引擎 ffmpeg.wasm 完全在本地运行；视频过长（如超过 10 分钟）时编码需要一些时间，期间可随时取消。</p>
+  </section>
+
+    <input id="subVidInput" type="file" accept="video/*,.mp4,.mkv,.mov,.webm,.avi,.ts,.m4v" hidden>
+
+  <!-- ============ 录音转写工作区（多媒体全链路入口） ============ -->
+  <section id="audioWorkspace" class="card au-workspace hidden">
+    <div class="au-head">
+      <div>
+        <h2>🎙️ 录音转写 · 多媒体创作全链路</h2>
+        <p class="au-sub">录音 / 音频 → 本地转写 → 自动清理口语 → 文稿加工 → PPT / 分镜 / 字幕，一站到底</p>
+      </div>
+      <div id="auSteps" class="au-steps"></div>
+    </div>
+    <div class="au-main">
+      <div class="au-left">
+        <div class="au-engine" id="auEngine">
+          <span class="au-engine-dot unknown" id="auEngineDot"></span>
+          <span id="auEngineText">正在检测本地转写服务…</span>
+          <span class="spacer"></span>
+          <button id="auDetectBtn" class="ghost-btn small">🔄 检测</button>
+        </div>
+        <details id="auEngineHelp" class="au-engine-help">
+          <summary>🔧 没连上？三步启动本地转写服务（faster-whisper）</summary>
+          <ol>
+            <li>安装 <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">Python 3.9+</a>（勾选 Add to PATH）；</li>
+            <li>双击项目目录 <code>tools\启动转写服务.bat</code>（首次自动安装 faster-whisper，也可手动 <code>pip install faster-whisper</code>）；</li>
+            <li>保持黑窗口开启，回到这里点「🔄 检测」。首次转写会自动下载识别模型（base 约 140MB）。</li>
+          </ol>
+          <p>🔒 音频只发往本机 <code>127.0.0.1</code>，全程离线转写，不消耗任何 token、不上传任何服务器。模型可换 <code>small</code> / <code>medium</code> 提升精度（启动命令加 <code>--model small</code>）。</p>
+        </details>
+        <div class="au-src-row">
+          <div id="auDropZone" class="au-drop">
+            <div class="au-drop-icon">🎧</div>
+            <p>点击选择音频文件，或直接拖到这里</p>
+            <p class="au-drop-sub">支持 MP3 / WAV / M4A / AAC / FLAC / OGG / WebM 等 · 录音、网课、会议、访谈都行</p>
+          </div>
+          <div class="au-record-row">
+            <button id="auRecordBtn" class="primary-btn">🎤 开始录音</button>
+            <span id="auRecTimer" class="au-rec-timer hidden">00:00</span>
+            <span id="auSrcInfo" class="au-src-info"></span>
+          </div>
+          <input id="auFileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.webm,.amr,.opus" hidden>
+        </div>
+        <div class="au-opt-row">
+          <span class="option-label">识别语言</span>
+          <select id="auLangSel" class="select">
+            <option value="auto">🌐 自动检测</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="ja">🇯🇵 日本語</option>
+          </select>
+          <span class="option-label">转写服务</span>
+          <input id="auBaseInput" class="au-base" placeholder="http://localhost:8765" title="faster-whisper 转写服务地址">
+        </div>
+        <button id="auGoBtn" class="primary-btn au-go" disabled>🚀 开始转写</button>
+        <div id="auProgress" class="au-progress hidden">
+          <div class="au-progress-top">
+            <span id="auStatusText">准备中…</span>
+            <button id="auCancelBtn" class="danger-btn small hidden">⏹ 取消</button>
+          </div>
+          <div class="v-bar"><i id="auBarFill" style="width:0%"></i></div>
+        </div>
+      </div>
+      <div class="au-right">
+        <div id="auEmpty" class="au-empty">
+          <div class="au-empty-icon">📝</div>
+          <p>转写完成后，原始文稿会出现在这里</p>
+          <p class="au-empty-sub">自动过滤口语废话与识别幻觉 → 一路送到文稿加工、PPT、分镜脚本和字幕</p>
+        </div>
+        <div id="auResult" class="hidden">
+          <div class="au-result-head">
+            <span id="auMeta" class="au-meta"></span>
+            <span id="auChips" class="au-chips"></span>
+          </div>
+          <textarea id="auText" class="au-text" placeholder="转写结果（可直接编辑）"></textarea>
+          <div class="au-actions">
+            <button id="auSendBtn" class="primary-btn">➡ 发送到文稿工作台</button>
+            <button id="auPptBtn" class="ghost-btn">➡ 生成 PPT</button>
+            <button id="auClipBtn" class="ghost-btn">➡ 分镜脚本</button>
+            <button id="auSubBtn" class="ghost-btn">➡ 视频字幕</button>
+          </div>
+          <div class="au-actions au-actions-2">
+            <button id="auAiCleanBtn" class="ghost-btn small" title="用当前 AI（在线 DeepSeek 或本地 Ollama）深度整理：修标点、去口水词、按语义分段，保留原意">🧹 AI 整理初稿</button>
+            <button id="auUndoRawBtn" class="ghost-btn small hidden">↩ 原始转写</button>
+            <button id="auCopyBtn" class="ghost-btn small">复制</button>
+            <button id="auDownloadTxtBtn" class="ghost-btn small">⬇ .txt</button>
+            <button id="auDownloadSrtBtn" class="ghost-btn small" title="带原始时间轴的字幕文件，可直接导入剪映">⬇ .srt</button>
+          </div>
+          <p class="au-hint">💡 全链路：发送到文稿工作台后可继续润色 / 降重 / 审校 / 生成思维导图；「生成 PPT」一键出大纲并导出 .pptx；分镜脚本与视频字幕在「剪辑助手」完成（字幕也可用「本地快速拆句」秒出不耗 AI）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 提示词库 / 模板包（变现核心模块） ============ -->
+  <section id="promptsWorkspace" class="card pk-workspace hidden">
+  <div class="pk-head">
+    <div>
+      <h2>📦 提示词 & 模板包</h2>
+      <p class="pk-sub">精选提示词库：分类管理 · 一键使用 · AI 生成专属提示词 · JSON 包导入导出（可分发 / 售卖）</p>
+    </div>
+    <div class="pk-toolbar">
+      <button id="pkNewBtn" class="ghost-btn small">➕ 新建</button>
+      <button id="pkGenBtn" class="primary-btn small">🪄 AI 生成提示词</button>
+      <button id="pkImportBtn" class="ghost-btn small">📥 导入 JSON 包</button>
+      <button id="pkExportAllBtn" class="ghost-btn small">⬇ 导出全部</button>
+      <button id="pkResetBtn" class="text-btn" title="重新载入内置精选模板（只补回缺失的内置条目，不影响你自己的模板）">恢复内置</button>
+    </div>
+  </div>
+  <div id="pkStats" class="pk-stats"></div>
+  <div class="pk-main">
+    <aside class="pk-side">
+      <input id="pkSearch" type="text" class="pk-search" placeholder="🔍 搜索：标题 / 简介 / 标签 / 正文…">
+      <nav id="pkCats" class="pk-cats"></nav>
+      <p class="pk-side-hint">💡 点卡片「▶ 使用」：粘贴内容 → 一键按该提示词生成；「⬇」导出单条 JSON；导入的 JSON 包可直接分发或售卖。</p>
+    </aside>
+    <div class="pk-list" id="pkList"></div>
+  </div>
+  <input id="pkImportInput" type="file" accept=".json,application/json" hidden>
+</section>
+
+  <!-- ============ 批量处理工作区 ============ -->
+  <section id="batchWorkspace" class="card bt-workspace hidden">
+    <div class="bt-head">
+      <div>
+        <h2>📋 批量处理</h2>
+        <p class="bt-sub">多篇文档 / 多段录音 → 排队逐个执行摘要 / 润色 / 字幕校对，适合小组作业与大量课堂录音</p>
+      </div>
+    </div>
+    <div class="bt-ops">
+      <span class="option-label">批量任务</span>
+      <div class="segmented" id="btOpSeg">
+        <button class="seg active" data-op="summary">📝 批量摘要</button>
+        <button class="seg" data-op="polish">✨ 批量润色</button>
+        <button class="seg" data-op="subfix">🎬 字幕校对</button>
+      </div>
+      <span class="bt-hint">.srt 文件会自动按「字幕校对」处理 · 音频文件自动先转写（需录音转写页的本地服务）</span>
+    </div>
+    <div class="bt-add-row">
+      <div id="btDrop" class="bt-drop">📥 点击选择文件，或拖到这里（可多选：txt / md / srt / mp3 / wav / m4a / webm…）</div>
+      <button id="btPasteBtn" class="ghost-btn small">📋 粘贴添加</button>
+      <button id="btFromAuBtn" class="ghost-btn small" title="把「录音转写」页当前的转写结果加入队列">🎙️ 导入录音转写结果</button>
+      <input id="btFileInput" type="file" multiple hidden accept=".txt,.md,.srt,.vtt,.mp3,.wav,.m4a,.aac,.flac,.ogg,.webm,.opus">
+    </div>
+    <div id="btList" class="bt-list"></div>
+    <div class="bt-foot">
+      <button id="btRunBtn" class="primary-btn" disabled>▶ 开始批量处理</button>
+      <button id="btCancelBtn" class="danger-btn small hidden">⏹ 取消</button>
+      <span id="btProgressText" class="bt-progress-text"></span>
+      <span class="spacer"></span>
+      <button id="btExportBtn" class="ghost-btn small hidden">⬇ 合并导出 .md</button>
+      <button id="btClearBtn" class="text-btn hidden">清空</button>
+    </div>
+    <div id="btBar" class="v-bar hidden"><i id="btBarFill"></i></div>
+  </section>
+
+  <!-- ============ 答辩模拟工作区 ============ -->
+  <section id="defenseWorkspace" class="card df-workspace hidden">
+    <div class="df-head">
+      <div>
+        <h2>🎤 答辩模拟</h2>
+        <p class="df-sub">AI 扮演评委多轮随机提问 → 你作答 → AI 点评漏洞并追问 → 随时结束生成表现报告</p>
+      </div>
+      <div id="dfRound" class="df-round hidden">第 <b id="dfRoundNum">1</b> 问</div>
+    </div>
+    <div id="dfSetup" class="df-setup">
+      <div class="field">
+        <span class="field-label">汇报文稿 / 论文摘要 / 开题报告 *</span>
+        <textarea id="dfDoc" class="pk-edit-body" style="min-height:150px" placeholder="粘贴你的论文摘要、开题报告、项目介绍或汇报文稿……评委将围绕它提问"></textarea>
+      </div>
+      <div class="df-opts">
+        <span class="option-label">场景</span>
+        <select id="dfScene" class="select">
+          <option value="毕业答辩">🎓 毕业答辩</option>
+          <option value="开题评审">📐 开题评审</option>
+          <option value="项目汇报">💼 项目汇报</option>
+          <option value="课程展示">📚 课程展示</option>
+        </select>
+        <span class="option-label">评委风格</span>
+        <div class="segmented" id="dfStyleSeg">
+          <button class="seg" data-dfstyle="温和">🤝 温和</button>
+          <button class="seg active" data-dfstyle="标准">⚖️ 标准</button>
+          <button class="seg" data-dfstyle="犀利">🔥 犀利</button>
+        </div>
+      </div>
+      <button id="dfStartBtn" class="primary-btn">🎤 开始模拟答辩</button>
+      <p class="bt-hint">💡 建议 5～10 轮：回答尽量口语化，像真实答辩一样「先结论、再论据」；评委每次只问一个问题，会根据你的回答追问。</p>
+    </div>
+    <div id="dfChatWrap" class="hidden">
+      <div id="dfChat" class="df-chat"></div>
+      <div class="df-inputrow">
+        <textarea id="dfInput" class="df-input" placeholder="输入你的回答…（Ctrl + Enter 发送）"></textarea>
+        <div class="df-input-acts">
+          <button id="dfSendBtn" class="primary-btn">发送回答</button>
+          <button id="dfEndBtn" class="ghost-btn small">🏁 结束 · 出报告</button>
+          <button id="dfRestartBtn" class="text-btn">↺ 重新开始</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <footer class="foot">云笺 · 个人文稿全能助手 · 文本与历史记录仅保存在你本机浏览器中，请放心使用</footer>
+</main>
+
+<!-- ============ 批量结果弹窗 ============ -->
+<div id="btResultMask" class="modal-mask hidden">
+  <div class="modal" style="width:660px">
+    <div class="modal-head">
+      <h2 id="btResultTitle">结果</h2>
+      <button id="btResultClose" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <textarea id="btResultText" class="pk-edit-body" style="min-height:320px"></textarea>
+    <div class="modal-foot pk-use-foot">
+      <button id="btResultApply" class="ghost-btn">📥 应用到输入框</button>
+      <button id="btResultDownload" class="primary-btn">⬇ 下载</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 批量 · 粘贴添加弹窗 ============ -->
+<div id="btPasteMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📋 添加文本任务</h2>
+      <button id="btPasteClose" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <div class="field">
+      <span class="field-label">任务名称</span>
+      <input id="btPasteName" type="text" placeholder="如：第三章课堂录音 / 小组论文初稿">
+    </div>
+    <div class="field">
+      <span class="field-label">内容 *</span>
+      <textarea id="btPasteContent" class="pk-edit-body" placeholder="粘贴文稿或 SRT 字幕…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button id="btPasteSave" class="primary-btn">添加到队列</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 提示词 编辑 / 新建 弹窗 ============ -->
+<div id="pkEditMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="pkEditTitle">✏️ 编辑提示词</h2>
+      <button id="pkEditClose" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <div class="field">
+      <span class="field-label">标题 *</span>
+      <input type="text" id="pkEditName" placeholder="如：毕业答辩模拟考官">
+    </div>
+    <div class="field">
+      <span class="field-label">分类</span>
+      <select id="pkEditCat" class="select"></select>
+    </div>
+    <div class="field">
+      <span class="field-label">简介（列表里展示的一句话）</span>
+      <input type="text" id="pkEditDesc" placeholder="如：扮演答辩考官提出 10 个问题与追问，附参考答案框架">
+    </div>
+    <div class="field">
+      <span class="field-label">标签（逗号分隔，便于搜索）</span>
+      <input type="text" id="pkEditTags" placeholder="答辩, 模拟, 论文">
+    </div>
+    <div class="field">
+      <span class="field-label">提示词正文 *（用 <code>{{input}}</code> 标记「用户粘贴内容」的位置）</span>
+      <textarea id="pkEditBody" class="pk-edit-body" placeholder="你是……请对以下内容……\n\n{{input}}\n\n输出要求：……"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button id="pkEditSave" class="primary-btn">💾 保存到模板库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 提示词 使用 弹窗 ============ -->
+<div id="pkUseMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="pkUseTitle">▶ 使用提示词</h2>
+      <button id="pkUseClose" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <p id="pkUseDesc" class="pk-use-desc"></p>
+    <div class="field">
+      <span class="field-label">提示词（可按需微调）</span>
+      <textarea id="pkUseBody" class="pk-edit-body" style="min-height:150px"></textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">要处理的内容（粘贴你的文稿 / 录音整理稿 / 主题等；留空则直接按提示词开始）</span>
+      <textarea id="pkUseContent" class="pk-edit-body" style="min-height:110px" placeholder="把需要处理的内容粘贴到这里…"></textarea>
+    </div>
+    <div class="modal-foot pk-use-foot">
+      <button id="pkUseCopy" class="ghost-btn">📋 只复制提示词</button>
+      <button id="pkUseRun" class="primary-btn">▶ 开始生成</button>
+    </div>
+    <p class="privacy">生成走当前 AI 模式（设置中可切换在线 DeepSeek / 本地 Ollama）。</p>
+  </div>
+</div>
+
+<!-- ============ AI 提示词生成器 弹窗 ============ -->
+<div id="pkGenMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>🪄 AI 生成专属提示词</h2>
+      <button id="pkGenClose" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <div id="pkGenForm">
+      <div class="field">
+        <span class="field-label">描述你的使用场景 *</span>
+        <textarea id="pkGenScene" class="pk-edit-body" style="min-height:90px" placeholder="例如：我是导师，想让 AI 扮演答辩委员，对学生的开题报告提出尖锐但专业的问题，帮学生提前演练……"></textarea>
+      </div>
+      <div class="field">
+        <span class="field-label">保存到哪个分类</span>
+        <select id="pkGenCat" class="select"></select>
+      </div>
+      <div class="field">
+        <span class="field-label">补充要求（可选）</span>
+        <input type="text" id="pkGenExtra" placeholder="如：每次出 10 个问题、语气严格但礼貌、输出带参考答案框架">
+      </div>
+      <div class="modal-foot">
+        <button id="pkGenRun" class="primary-btn">🪄 生成</button>
+      </div>
+    </div>
+    <div id="pkGenPreview" class="hidden">
+      <div class="field">
+        <span class="field-label">生成结果预览（可直接修改再保存）</span>
+      </div>
+      <div class="field">
+        <input type="text" id="pkGenTitle" placeholder="标题">
+      </div>
+      <div class="field">
+        <input type="text" id="pkGenDesc" placeholder="一句话简介">
+      </div>
+      <div class="field">
+        <textarea id="pkGenBody" class="pk-edit-body" style="min-height:200px"></textarea>
+      </div>
+      <div class="modal-foot pk-use-foot">
+        <button id="pkGenAgain" class="ghost-btn">🔄 重新生成</button>
+        <button id="pkGenSave" class="primary-btn">💾 保存到模板库</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 历史记录抽屉 ============ -->
+<div id="drawerMask" class="drawer-mask hidden"></div>
+<aside id="historyDrawer" class="drawer" aria-label="历史记录">
+  <div class="drawer-head">
+    <h2>🕘 历史记录</h2>
+    <div class="drawer-head-actions">
+      <button id="clearHistory" class="text-btn danger">清空全部</button>
+      <button id="closeDrawer" class="icon-btn" title="关闭">✕</button>
+    </div>
+  </div>
+  <div class="history-search">
+    <input id="historySearch" type="text" placeholder="🔍 搜索记录：功能名或内容关键词…">
+  </div>
+  <div id="historyList" class="history-list"></div>
+</aside>
+
+<!-- ============ 设置弹窗 ============ -->
+<div id="settingsMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>⚙️ 设置</h2>
+      <button id="closeSettings" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <div class="field">
+      <span class="field-label">🧭 AI 模式（二选一）</span>
+      <select id="providerSelect" class="select">
+        <option value="deepseek">🌐 在线 API 模式：DeepSeek（需 API Key · 消耗 token · 能力更强，适合长文档、PPT 生成）</option>
+        <option value="ollama">💻 本地离线模式：Ollama 本地模型（免费 · 不耗 token · 断网可用，适合日常文稿、录音整理）</option>
+      </select>
+    </div>
+    <div id="deepseekFields">
+      <div class="field">
+        <span class="field-label">DeepSeek API Key</span>
+        <div class="key-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+          <button id="toggleKey" class="icon-btn" title="显示/隐藏">👁</button>
+        </div>
+        <a class="hint-link" href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">没有 Key？点此前往 DeepSeek 开放平台创建 →</a>
+      </div>
+      <div class="field">
+        <span class="field-label">模型</span>
+        <select id="modelSelect" class="select">
+          <option value="deepseek-chat">deepseek-chat（V3 · 通用，推荐）</option>
+          <option value="deepseek-reasoner">deepseek-reasoner（R1 · 深度思考，稍慢）</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">API 地址（使用代理 / 中转时可修改）</span>
+        <input type="text" id="apiBaseInput" placeholder="https://api.deepseek.com">
+      </div>
+      <div class="field">
+        <span class="field-label">💰 账户余额</span>
+        <div class="balance-row">
+          <span id="balanceDetail" class="balance-detail">—</span>
+          <button id="queryBalance" class="ghost-btn small">查询</button>
+        </div>
+      </div>
+    </div>
+    <div id="ollamaFields" class="hidden">
+      <div class="field">
+        <span class="field-label">本地模型服务地址（Ollama 的 OpenAI 兼容端点）</span>
+        <input type="text" id="ollamaBaseInput" placeholder="http://localhost:11434/v1">
+        <p class="field-hint">安装 Ollama 后默认即此地址，无需改动；LM Studio 等兼容端点也可填（如 http://localhost:1234/v1）。</p>
+      </div>
+      <div class="field">
+        <span class="field-label">本地模型</span>
+        <div class="key-row">
+          <input type="text" id="ollamaModelInput" list="ollamaModelList" placeholder="如 qwen3:8b，点「检测」自动获取">
+          <button id="detectOllama" class="ghost-btn small" type="button">🔍 检测</button>
+        </div>
+        <datalist id="ollamaModelList"></datalist>
+        <p class="field-hint" id="ollamaDetStatus">首次使用：到 <a href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com</a> 安装并启动 Ollama，命令行执行 <code>ollama pull qwen3:8b</code> 拉取一个模型（约 5GB），再点「检测」即可自动填入。</p>
+        <p class="field-hint">💡 <b>模型怎么选（离线体验的关键）</b>：日常文稿 / 简历 / 模板生成推荐 <code>qwen3:8b</code> 起步——1.5b 以下的小模型写长文书会明显空洞、跑题；qwen3、deepseek-r1 等「思考型」模型会先思考再给正文，云笺已自动剥离思考内容；若正文仍不完整，给 Ollama 设置环境变量 <code>OLLAMA_CONTEXT_LENGTH=8192</code> 后重启 Ollama。</p>
+      </div>
+      <p class="field-hint">🔒 本地模式全程在你的电脑上离线运行，文稿内容不会离开本机、不消耗任何 token；速度与效果取决于模型大小和电脑配置。若浏览器控制台报跨域错误，给 Ollama 设置环境变量 <code>OLLAMA_ORIGINS=*</code> 后重启即可。</p>
+    </div>
+    <div class="field">
+      <span class="field-label">📊 Token 用量（在线 API · 本机累计）</span>
+      <div class="balance-row">
+        <span id="usageStats" class="balance-detail">—</span>
+        <button id="resetUsage" class="text-btn danger">清零</button>
+      </div>
+    </div>
+    <label class="field checkbox">
+      <input type="checkbox" id="demoMode">
+      <span>演示模式（不调用任何 API，用模拟输出体验完整流程）</span>
+    </label>
+    <label class="field checkbox">
+      <input type="checkbox" id="autoSlim">
+      <span id="autoSlimLabel">自动瘦身超长文本（在线 API 模式 · 默认开启：2000 字以上发送前自动压缩「发给 AI 的副本」省 Token，只清理空白与重复行、不改内容，输入框原文保持不变）</span>
+    </label>
+    <div class="modal-foot">
+      <button id="saveSettings" class="primary-btn">保存</button>
+    </div>
+    <p class="privacy">🔒 API Key 仅保存在你自己浏览器的 localStorage 中，不会上传到任何服务器；本地 Ollama 模式则完全离线，文稿内容不会离开你的电脑。</p>
+  </div>
+</div>
+
+<!-- ============ 使用指南 ============ -->
+<div id="guideMask" class="modal-mask hidden">
+  <div class="modal" style="width:600px">
+    <div class="modal-head">
+      <h2>📖 云笺使用指南</h2>
+      <button id="closeGuide" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <div class="guide-body">
+      <h3 class="guide-h">🚀 快速上手三步</h3>
+      <div class="guide-steps">
+        <div class="guide-step"><i>1</i><div class="gs-body"><b>选 AI 模式</b><span>顶栏下拉：🌐 在线（填 DeepSeek Key；新访客点「🎁 免费体验 3 次」直接试）或 💻 本地（装 Ollama，完全免费断网可用）</span></div></div>
+        <div class="guide-step"><i>2</i><div class="gs-body"><b>喂入内容</b><span>左侧大输入框粘贴文稿 / 录音转写结果 / 字幕；支持拖入 txt、srt 文件；「录音转写」页可直接录音或上传音频</span></div></div>
+        <div class="guide-step"><i>3</i><div class="gs-body"><b>点功能按钮</b><span>右侧实时流式输出结果，可复制 / 导出 .md / .srt / 一键应用回输入框继续加工</span></div></div>
+      </div>
+
+      <h3 class="guide-h">🧰 功能速查（17 个模块）</h3>
+      <div class="guide-grid">
+        <div class="guide-item"><b>🪄 润色</b>润色/精简/扩写，7 种风格改写</div>
+        <div class="guide-item"><b>📋 摘要</b>提炼重点，一键思维导图</div>
+        <div class="guide-item"><b>📑 模板</b>邮件、请假条、简历、汇报提纲</div>
+        <div class="guide-item"><b>🔄 转换</b>书面↔口语、转微信/邮件</div>
+        <div class="guide-item"><b>🧬 查重降重</b>风险自查 + AI 改写降重</div>
+        <div class="guide-item"><b>✅ 审校</b>错别字/格式/敏感词体检</div>
+        <div class="guide-item"><b>⚖️ 对比</b>两版文稿高亮差异 + 报告</div>
+        <div class="guide-item"><b>🎓 学术</b>润色/纠错/中英互译/速读</div>
+        <div class="guide-item"><b>🔬 文献</b>检索词 + GB/T 7714 格式化</div>
+        <div class="guide-item"><b>📚 笔记</b>拆章节、提考点、出题</div>
+        <div class="guide-item"><b>📊 PPT</b>大纲生成，导出 .pptx</div>
+        <div class="guide-item"><b>🎬 剪辑助手</b>分镜脚本、字幕校对翻译</div>
+        <div class="guide-item"><b>🎤 答辩模拟</b>AI 评委提问、点评漏洞</div>
+        <div class="guide-item"><b>🎙️ 录音转写</b>录音/音频转文字（本机或云端）</div>
+        <div class="guide-item"><b>📋 批量处理</b>多文件排队摘要/润色/校对</div>
+        <div class="guide-item"><b>📦 提示词库</b>提示词包管理、AI 生成、导入导出</div>
+        <div class="guide-item"><b>🎞️ 视频剪辑</b>本地压缩/截取/GIF/提取音频</div>
+      </div>
+
+      <h3 class="guide-h">💡 你可能想知道</h3>
+      <div class="guide-faq">
+        <p>· <b>要花钱吗？</b>软件免费。AI 生成：填自己的 DeepSeek Key（便宜），或本地 Ollama（0 成本）；新访客有 <b>3 次免费体验</b></p>
+        <p>· <b>隐私安全吗？</b>文稿只存在你自己浏览器；本地模式完全离线；免费体验的音频/AI 请求经官方接口处理</p>
+        <p>· <b>录音转写怎么用？</b>电脑完整版装本地服务（更准、有时间轴）；线上版直接用云端转写（免费，每日 10 次）</p>
+        <p>· <b>遇到问题？</b>点右下角小云问一问，或看 README 常见问题</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button id="guideTour" class="primary-btn">🎓 带我用一遍（新手引导）</button>
+      <button id="closeGuide2" class="ghost-btn">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 免费体验 1 次 ============ -->
+<div id="trialMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>🎁 免费体验 3 次</h2>
+      <button id="closeTrial" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <p class="lh-text">还没有填 API Key？可以先用<b>「免费体验」</b>跑通真实生成——<b>费用由作者承担</b>，每台设备可体验 <b>3 次</b>，输出和正式模式完全一样。</p>
+    <p class="field-hint">体验规则：每台设备 3 次 · 单次限 3600 字以内 · 由 AI（DeepSeek）真实处理。<br>体验后：填入自己的 DeepSeek API Key，或切换<b>本地 Ollama 模式</b>（免费、断网可用）即可无限使用。</p>
+    <div class="lh-actions">
+      <button id="trialGo" class="primary-btn">🎁 开始体验</button>
+      <button id="trialGoSettings" class="ghost-btn">去填我的 Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 长文本 · 切换本地模型提示 ============ -->
+<div id="localHintMask" class="modal-mask hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>💻 长文本省 Token 提示</h2>
+      <button id="closeLocalHint" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <p class="lh-text" id="localHintText"></p>
+    <p class="field-hint">两种模式随时可切：本地模型（Ollama）在你电脑上离线运行开源模型，<b>免费、不消耗 Token、断网也能用</b>；在线 DeepSeek API 能力更强，适合追求质量的长文档与 PPT 生成。</p>
+    <div class="lh-actions">
+      <button id="lhUseLocal" class="primary-btn">💻 切换本地模型生成（免费）</button>
+      <button id="lhKeepOnline" class="ghost-btn">🌐 继续用在线 API</button>
+    </div>
+    <label class="field checkbox">
+      <input type="checkbox" id="lhNoHint">
+      <span>以后不再提示（可到「设置」重新开启）</span>
+    </label>
+  </div>
+</div>
+
+<!-- ============ 壁纸栏 ============ -->
+<div id="themePanel" class="theme-panel hidden">
+  <div class="theme-head">🎨 选择壁纸</div>
+  <div class="theme-grid">
+    <button class="theme-swatch" data-theme="aurora"><i style="background:linear-gradient(135deg,#818cf8,#c7d2fe,#eef0ff)"></i><span>极光紫</span></button>
+    <button class="theme-swatch" data-theme="sakura"><i style="background:linear-gradient(135deg,#f472b6,#f9a8d4,#fdf2f8)"></i><span>樱花粉</span></button>
+    <button class="theme-swatch" data-theme="sky"><i style="background:linear-gradient(135deg,#38bdf8,#a5d8fa,#eff8ff)"></i><span>晴空蓝</span></button>
+    <button class="theme-swatch" data-theme="mint"><i style="background:linear-gradient(135deg,#34d399,#a7f3d0,#ecfdf5)"></i><span>薄荷绿</span></button>
+    <button class="theme-swatch" data-theme="sunset"><i style="background:linear-gradient(135deg,#fb923c,#fdba74,#fff7ed)"></i><span>暖阳橙</span></button>
+    <button class="theme-swatch" data-theme="starry"><i style="background:linear-gradient(135deg,#312e81,#7c3aed,#1e1b4b)"></i><span>星夜紫</span></button>
+    <button class="theme-swatch" data-theme="midnight"><i style="background:linear-gradient(135deg,#0c4a6e,#1e3a8a,#0f172a)"></i><span>墨夜蓝</span></button>
+    <button class="theme-swatch" data-theme="photo-sakura"><i style="background-image:url(assets/wallpapers/wp1.jpg)"></i><span>樱花季</span></button>
+    <button class="theme-swatch" data-theme="photo-window"><i style="background-image:url(assets/wallpapers/wp2.jpg)"></i><span>窗边日常</span></button>
+    <button class="theme-swatch" data-theme="photo-star"><i style="background-image:url(assets/wallpapers/wp3.jpg)"></i><span>星河入梦</span></button>
+    <button class="theme-swatch" data-theme="photo-kimono"><i style="background-image:url(assets/wallpapers/wp4.jpg)"></i><span>花窗和服</span></button>
+    <button class="theme-swatch" data-theme="photo-train"><i style="background-image:url(assets/wallpapers/wp5.jpg)"></i><span>黄昏电车</span></button>
+    <button class="theme-swatch" data-theme="photo-splash"><i style="background-image:url(assets/wallpapers/wp6.jpg)"></i><span>夏日水花</span></button>
+    <button class="theme-swatch" data-theme="photo-sea"><i style="background-image:url(assets/wallpapers/wp7.jpg)"></i><span>海风少女</span></button>
+    <button class="theme-swatch theme-upload" id="wpUploadBtn" type="button" title="上传本地图片作为壁纸（仅保存在你自己的浏览器里）"><i>＋</i><span>上传壁纸</span></button>
+  </div>
+  <input id="wpUploadInput" type="file" accept="image/*" multiple hidden>
+  <div id="wpOpacityRow" class="wp-opacity-row hidden">
+    <span class="option-label">🌆 壁纸浓度</span>
+    <input type="range" id="wpOpacity" min="10" max="100" value="45" aria-label="壁纸浓度">
+    <span id="wpOpacityVal">45%</span>
+  </div>
+  <div class="glass-row">
+    <button id="glassToggle" class="chip active" type="button" title="工作台半透明 + 背景模糊，壁纸隐约透出但不影响阅读">🪟 毛玻璃工作台（透出壁纸）</button>
+    <p class="hint">开启后工作台呈毛玻璃效果，壁纸隐约可见；如觉得花或卡顿可关闭。</p>
+  </div>
+</div>
+
+<!-- ============ AI 小助手 ============ -->
+<button id="aiFab" class="ai-fab" title="AI 小助手「小云」"><img id="aiFabImg" src="assets/xiaoyun/03.jpg" alt="小云" onerror="this.outerHTML='🤖'"><i id="aiFabDot" class="ai-fab-dot hidden"></i></button>
+<div id="aiPanel" class="ai-panel hidden">
+  <div class="ai-head" id="aiHead">
+    <img id="aiHeadAvatar" class="ai-head-avatar" src="assets/xiaoyun/03.jpg" alt="" onerror="this.style.display='none'">
+    <div class="ai-head-text">
+      <div class="ai-head-title">写作小助手「小云」</div>
+      <div class="ai-sub">你的元气写作搭子 · 随时找我聊</div>
+      <div class="ai-head-acts">
+        <button id="aiHeadTour" class="ai-head-btn">🎓 带我用一遍</button>
+        <button id="aiHeadGuide" class="ai-head-btn">📖 使用指南</button>
+      </div>
+    </div>
+    <button id="aiClose" class="icon-btn" title="收起">✕</button>
+  </div>
+  <div class="ai-tips" id="aiTips"></div>
+  <div class="ai-chat" id="aiChat">
+    <div class="ai-msg ai"><img class="ai-msg-avatar" src="assets/xiaoyun/03.jpg" alt="" onerror="this.style.display='none'"><div class="ai-bubble">嗨～我是你的写作搭子「小云」(｡•ᴗ•｡) 粘贴文本后我会悄悄提示你用哪个功能最合适；写作上遇到什么烦恼，也都可以来问我哟～</div></div>
+  </div>
+  <div class="ai-inputrow">
+    <input id="aiInput" type="text" placeholder="问问小助手，如：请假条怎么写？">
+    <button id="aiSend" class="primary-btn small">发送</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+<script src="vendor/pptxgenjs/pptxgen.bundle.js"></script>
+<script src="vendor/ffmpeg/ffmpeg.js"></script>
+<script src="video.js"></script>
+</body>
+</html>

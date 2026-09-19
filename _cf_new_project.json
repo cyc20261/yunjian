@@ -1,0 +1,63 @@
+{
+  "id": "7d72d588-5f23-404b-897f-aecbf8b1e377",
+  "name": "yunjian",
+  "subdomain": "yunjian-8ge.pages.dev",
+  "domains": [
+    "yunjian-8ge.pages.dev"
+  ],
+  "source": {
+    "type": "github",
+    "config": {
+      "owner": "cyc20261",
+      "owner_id": "329374434",
+      "repo_name": "yunjian",
+      "repo_id": "1376955799",
+      "production_branch": "main",
+      "pr_comments_enabled": true,
+      "deployments_enabled": true,
+      "production_deployments_enabled": true,
+      "preview_deployment_setting": "all",
+      "preview_branch_includes": [
+        "*"
+      ],
+      "preview_branch_excludes": [],
+      "path_includes": [
+        "*"
+      ],
+      "path_excludes": []
+    }
+  },
+  "build_config": {
+    "web_analytics_tag": null,
+    "web_analytics_token": null
+  },
+  "deployment_configs": {
+    "preview": {
+      "env_vars": null,
+      "fail_open": true,
+      "always_use_latest_compatibility_date": false,
+      "compatibility_date": "2026-09-19",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": "standard"
+    },
+    "production": {
+      "env_vars": null,
+      "fail_open": true,
+      "always_use_latest_compatibility_date": false,
+      "compatibility_date": "2026-09-19",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": "standard"
+    }
+  },
+  "latest_deployment": null,
+  "canonical_deployment": null,
+  "created_on": "2026-09-19T09:33:48.440013Z",
+  "production_branch": "main",
+  "production_script_name": "pages-worker--19637958-production",
+  "preview_script_name": "pages-worker--19637958-preview",
+  "uses_functions": null,
+  "framework": "",
+  "framework_version": ""
+}

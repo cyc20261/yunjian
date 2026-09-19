@@ -5,7 +5,7 @@ _study/
 .video_agent/
 
 # 部署产物（Cloudflare Pages 自动构建内容）
-_deploy/
+
 
 # 本地测试与临时文件
 _test*
