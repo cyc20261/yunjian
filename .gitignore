@@ -1,0 +1,23 @@
+# 学习参考源码与压缩包（不入库）
+_study/
+*.zip
+.v2c/
+.video_agent/
+
+# 部署产物（Cloudflare Pages 自动构建内容）
+_deploy/
+
+# 本地测试与临时文件
+_test*
+_cut*.png
+*.log
+
+# 视频内核太大（31MB）不入库：完整包通过其他渠道分发
+vendor/ffmpeg/ffmpeg-core.wasm
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+
+# Wrangler 本地状态与缓存
+.wrangler/

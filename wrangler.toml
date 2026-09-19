@@ -1,0 +1,18 @@
+# 云笺 · Cloudflare Pages 配置（免费体验中转 + KV 记账）
+# 部署：npx wrangler pages deploy（或双击 deploy.bat）
+name = "yunjian"
+pages_build_output_dir = "_deploy"
+compatibility_date = "2025-01-01"
+
+# Workers AI：云端语音转写兜底（访客手机无本机转写服务时自动使用）
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "TRIAL"
+id = "254cbcc9418448fbb097dba2d45eb43b"
+
+# 可选变量（取消注释生效）：
+# [vars]
+# IP_LIMIT = "9"      # 同一网络（出口 IP）下总体验次数，默认 9 = 3 台设备 × 各 3 次
+# DAILY_LIMIT = "100" # 全局每日体验总次数
